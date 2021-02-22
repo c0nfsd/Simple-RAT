@@ -72,4 +72,54 @@ int Shell(){
         }
     }
 }
+//Adding Server Function
 
+int Server(){
+    char ports[1024];
+    int pid;
+    int optval=1;
+    sock_fd=socket(AF_INET,SOCK_STREAM, 0);
+    int i;
+
+    if(setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval))<0){
+        printf(" [!!] Error setting TCP Socket Options!\n");
+        return 1;
+    }
+
+    if(sock_fd<0)
+        fprintf(stderr," [!!] Error Opening Socket Handle!\n");
+
+    bzero((char *) &serv_addr, sizeof(serv_addr));
+
+    printf(" [>>] Input The Port To Accept Connections On: ");
+    fgets(ports, BUFSIZ, stdin);
+
+    int port=atoi(ports);
+
+    serv_addr.sin_family=AF_INET;
+    serv_addr.sin_port=htons(port);
+    serv_addr.sin_addr.s_addr=INADDR_ANY;
+
+    if(bind(sock_fd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))<0)
+        ErrorMessage(" [!!] Error Binding!\n");
+
+    listen(sock_fd, 5);
+
+    printf(" [>>] Waiting For Incoming Connections...\n");
+
+    clilen=sizeof(cli_addr);
+
+    newsock_fd=accept(sock_fd, (struct sockaddr *) &cli_addr, &clilen);            
+    
+    if(newsock_fd<0)
+        printf(" [!!] Error Accepting Connection!\n");
+
+    printf(" [>>] Connection From %s!\n", inet_ntoa(cli_addr.sin_addr));
+    printf(" [>>] Beginning Shell Session!\n");
+    Shell();
+    return 0;    
+}
+
+int main(void){
+    Server();
+}
